@@ -1,22 +1,12 @@
 const express = require("express");
 const inquirer = require("inquirer");
-const hide = require("hide-secrets");
 const mysql = require("mysql2");
-// const routes = require("./routes/routes");
-// const { query } = require("express");
-// const sequelize = require("./public/config/connection");
-
-// const Employee = require("./public/models/Employee");
-
-// const PORT = 3001;
+const consoleTable = require("console.table")
 const PORT = process.env.PORT || 3001;
-
 const app = express();
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
-
-// app.use(routes);
 
 const db = mysql.createConnection(
     {
@@ -28,27 +18,71 @@ const db = mysql.createConnection(
     console.log(`Connected to employees_db database.`)
   );
 
+  function workTime(){
+    inquirer.prompt([
+      {
+        type: "list",
+        name: "openingMessage",
+        message:"What would you like to do?",
+        choices: ["viewAllEmployees", "viewAllDepartments", "viewAllRoles", "quit"]
+      }
+    ]).then((inquirerResponse) => {
+      console.log("user selected" + inquirerResponse.openingMessage)
+      let choices = inquirerResponse.openingMessage
+         switch (choices){
+          case "viewAllEmployees":
+            viewAllEmployees();
+            break;
+            case "viewAllDepartments":
+              viewAllDepartments();
+              break;
+              case "viewAllRoles":
+                viewAllRoles();
+                break;
+                case "quit": 
+                quit();
+                break;
+                default: 
+                console.log("somethings wrong with you");
+                break;         
+    }})
+  }
+
 //database queries
-db.query ("SELECT * FROM employee_list", function (err, results) {
-    console.log(err,results);
+function viewAllEmployees(){
+  db.query("SELECT * FROM employee_list", function (err, results) {
+     (err) ? console.log(err) :  console.table(results), workTime();
   });
+  
+}
 
-db.query("SELECT * FROM department_list", function(err, results) {
-  console.log(results);
-});
+function viewAllDepartments(){
+  db.query("SELECT * FROM department_list", function(err, results) {
+    (err) ? console.log(err) : console.table(results), workTime();
+  });
+}
 
-db.query("SELECT * FROM role_list", function(err, results) {
-  console.log(results);
-})
+function viewAllRoles(){
+  db.query("SELECT * FROM role_list", function(err, results) {
+    (err) ? console.log(err) : console.table(results), workTime();
+  })
+}
+
+function quit(){
+  console.log("quitting you")
+  process.exit()
+}
+
 
 app.use((req, res) => {
   res.status(404).end();
   });
   
-// sequelize.sync({ force: true }).then(() => {
-//   app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-// });
+
 
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });
+
+
+  workTime();

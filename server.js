@@ -145,23 +145,62 @@ function addARole() {
 
 
 function addAEmployee() {
-  console.log("yo"), workTime()
-}
+  db.query("SELECT * FROM role_list", function (err, results) {
+    if (err) {
+      console.log(err);
+      return workTime();
+    }
+
+    const roleChoices = results.map(role => ({
+      value: role.id,
+      name: role.title
+    }))
+    ///inquirer
+    inquirer.prompt([
+      {
+        type: "input",
+        name: "firstName",
+        message: "Enter an employee name dood."
+      },
+      {
+        type: "input",
+        name: "lastName",
+        message: "enter an employee last name dood."
+      },
+      {
+        type: "list",
+        name: "roleId",
+        message: "wich role are we adding this guy to.",
+        choices: roleChoices
+      }
+    ]).then((inquirerResponse) => {
+      console.log("dood added: " + inquirerResponse.roleId)
+      let roleId = inquirerResponse.roleId;
+      let empName = inquirerResponse.firstName;
+      let empLast = inquirerResponse.lastName;
+      db.query(`INSERT INTO employee_list 
+               (first_name, last_name, 
+                role_list_id) VALUES 
+                ('${empName}', 
+                '${empLast}', 
+                '${roleId}')`, function (err, results){
+                  (err) ? console.log(err) : console.table(`Added:  ${empName}!!!!`,results) , workTime()
+                })
+              })   
+            });   
+          }
+
 function quit(){
   console.log("quitting you")
   process.exit()
-}
-
+};
 
 app.use((req, res) => {
   res.status(404).end();
   });
-  
-
 
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });
-
 
   workTime();

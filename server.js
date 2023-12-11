@@ -1,20 +1,14 @@
-const express = require("express");
 const inquirer = require("inquirer");
 const mysql = require("mysql2");
 const logo = require("asciiart-logo");
-const PORT = process.env.PORT || 3001;
-const app = express();
 require("console.table");
-
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
 
 const db = mysql.createConnection(
   {
     host: "localhost",
     user: "root",
-    password: "FrankY242424!",
-    database: "employees_db",
+    password: "",
+    database: "",
   },
   console.log(`Connected to employees_db database.`)
 );
@@ -35,7 +29,7 @@ function workTime() {
           "addADepartment",
           "addARole",
           "addAEmployee",
-          "updateEmployee",
+          "updateEmployee",          
           "quit",
         ],
       },
@@ -64,7 +58,7 @@ function workTime() {
           break;
         case "updateEmployee":
           updateEmployee();
-          break;
+          break;       
         case "quit":
           quit();
           break;
@@ -77,19 +71,19 @@ function workTime() {
 
 //database queries
 function viewAllEmployees() {
-  db.query("SELECT * FROM employee_list", function (err, results) {
+  db.query("SELECT  e.id AS employee_id,  e.first_name,  e.last_name,  r.title AS job_title,  d.dept_name AS department,  r.salary,  CONCAT(m.first_name, ' ', m.last_name) AS manager_name FROM   employee_list e JOIN   role_list r ON e.role_list_id = r.id JOIN   department_list d ON r.department_list_id = d.id LEFT JOIN   employee_list m ON e.manager_id = m.id;", function (err, results) {
     err ? console.log(err) : console.table(results), workTime();
   });
 }
 
 function viewAllDepartments() {
-  db.query("SELECT * FROM department_list", function (err, results) {
+  db.query("SELECT id AS department_id, dept_name AS department_name FROM department_list; ", function (err, results) {
     err ? console.log(err) : console.table(results), workTime();
   });
 }
 
 function viewAllRoles() {
-  db.query("SELECT * FROM role_list", function (err, results) {
+  db.query("SELECT r.id AS role_id,  r.title AS job_title,  r.salary,  d.dept_name AS department_name FROM   role_list r JOIN   department_list d ON r.department_list_id = d.id;", function (err, results) {
     err ? console.log(err) : console.table(results), workTime();
   });
 }
@@ -292,13 +286,5 @@ function quit() {
   console.log("quitting you");
   process.exit();
 }
-
-app.use((req, res) => {
-  res.status(404).end();
-});
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
 
 workTime();
